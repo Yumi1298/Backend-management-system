@@ -12,7 +12,6 @@
   #purchase-source option:first-child {
     color: #888; /* 設置灰色 */
   }
-  
 </style>
 <%- include("../parts/navbar") %>
 
@@ -22,94 +21,99 @@
     <main>
       <div class="container-fluid px-4">
         <h1 class="mt-4">新增資料</h1>
-        <div class="row my-3">
-          <div class="col-6">
-            <div class="card">
-              <div class="card-body">
-                <form name="form1" onsubmit="sendData(event)">
-                  <div class="mb-3">
-                    <label for="name" class="form-label"
-                      ><span class="required">**</span> 姓名</label
-                    >
-                    <input
-                      type="text"
-                      class="form-control"
-                      id="name"
-                      name="name"
-                    />
-                    <div class="form-text"></div>
-                  </div>
 
-                  <div class="mb-3">
-                    <label for="birthday" class="form-label"
-                      ><span class="required">**</span>生日</label
-                    >
-                    <input
-                      type="date"
-                      class="form-control"
-                      id="birthday"
-                      name="birthday"
-                    />
-                    <div class="form-text"></div>
-                  </div>
-
-                  <div class="mb-3">
-                    <label for="mobile" class="form-label">
-                      <span class="required">**</span>手機號碼</label
-                    >
-                    <input
-                      type="text"
-                      class="form-control"
-                      id="mobile"
-                      name="mobile"
-                    />
-                    <div class="form-text"></div>
-                  </div>
-
-                  <div class="mb-3">
-                    <label for="product_id" class="form-label">產品序號</label>
-
-                    <input
-                      class="form-control"
-                      id="product_id"
-                      name="product_id"
-                      rows="3"
-                    ></input>
-                    <div class="form-text"></div>
-                  </div>
-
-                  <div class="mb-3">
-                    <label for="purchase_date" class="form-label"
-                      >購買日期</label
-                    >
-                    <input
-                      type="date"
-                      class="form-control"
-                      id="purchase_date"
-                      name="purchase_date"
-                    />
-                    <div class="form-text"></div>
-                  </div>
-
-                  <div class="mb-3">
-                    <label for="purchase_source" class="form-label"
-                      >購買來源</label
-                    >
-                    <select id="purchase_source" name="purchase_source" class="form-select" >
-                      <option>---請選擇購買來源---</option>
-                      <option value="網路購買">網路購買</option>
-                      <option value="實體店面">實體店面</option>
-                      <option value="其他">其他</option>
-                    </select>
-                    
-                    <div class="form-text"></div>
-                  </div>
-
-                  <button type="submit" class="btn btn-primary">新增</button>
-                  <a href="/user" class="btn btn-secondary">到列表頁</a>
-                </form>
+        <div class="card my-3" style="max-width: 45rem">
+          <div class="card-body p-5">
+            <form name="form1" onsubmit="sendData(event)">
+              <!-- 姓名和生日 -->
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label for="name" class="form-label">
+                    <span class="required">**</span> 姓名
+                  </label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="name"
+                    name="name"
+                  />
+                  <div class="form-text"></div>
+                </div>
+                <div class="col-md-6">
+                  <label for="birthday" class="form-label">
+                    <span class="required">**</span> 生日
+                  </label>
+                  <input
+                    type="date"
+                    class="form-control"
+                    id="birthday"
+                    name="birthday"
+                  />
+                  <div class="form-text"></div>
+                </div>
               </div>
-            </div>
+
+              <!-- 手機號碼 -->
+              <div class="mb-3">
+                <label for="mobile" class="form-label">
+                  <span class="required">**</span> 手機號碼
+                </label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="mobile"
+                  name="mobile"
+                />
+                <div class="form-text"></div>
+              </div>
+
+              <!-- 產品序號 -->
+              <div class="mb-3">
+                <label for="product_id" class="form-label">產品序號</label>
+                <input
+                  class="form-control"
+                  id="product_id"
+                  name="product_id"
+                  rows="3"
+                />
+                <div class="form-text"></div>
+              </div>
+              <!-- 購買日期和來源 -->
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label for="purchase_date" class="form-label">購買日期</label>
+                  <input
+                    type="date"
+                    class="form-control"
+                    id="purchase_date"
+                    name="purchase_date"
+                  />
+                  <div class="form-text"></div>
+                </div>
+                <div class="col-md-6">
+                  <label for="purchase_source" class="form-label"
+                    >購買來源</label
+                  >
+                  <select
+                    id="purchase_source"
+                    name="purchase_source"
+                    class="form-select"
+                  >
+                    <option>---請選擇購買來源---</option>
+                    <option value="網路購買">網路購買</option>
+                    <option value="實體店面">實體店面</option>
+                    <option value="其他">其他</option>
+                  </select>
+                  <div class="form-text"></div>
+                </div>
+              </div>
+
+              <!-- 按鈕 -->
+              <div class="d-flex justify-content-end gap-2 mt-5">
+                <button type="submit" class="btn btn-dark">新增資料</button>
+                <a href="/user" class="btn btn-secondary">到列表頁</a>
+              </div>
+            </form>
           </div>
         </div>
       </div>
@@ -143,7 +147,7 @@
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
           繼續新增
         </button>
-        <a href="/user" class="btn btn-primary">到列表頁</a>
+        <a href="/user" class="btn btn-dark">到列表頁</a>
       </div>
     </div>
   </div>
@@ -154,15 +158,22 @@
   const birthdayField = document.form1.birthday;
   const mobileField = document.form1.mobile;
 
+  // 限制日期不能超過今天
+  document.addEventListener("DOMContentLoaded", function () {
+    const today = new Date().toISOString().split("T")[0]; // 取得今天日期
+
+    // 設定 max 屬性
+    document.getElementById("birthday").setAttribute("max", today);
+    document.getElementById("purchase_date").setAttribute("max", today);
+  });
+
   function validateBirthday(birthday) {
-    var re =
-      /^\d{4}-\d{2}-\d{2}$/;
+    var re = /^\d{4}-\d{2}-\d{2}$/;
     return re.test(birthday);
   }
 
   function validateMobile(mobile) {
-    var re =
-      /^09\d{8}$/;
+    var re = /^09\d{8}$/;
     return re.test(mobile);
   }
 
@@ -173,7 +184,7 @@
     nameField.style.border = "1px solid #CCCCCC";
     nameField.nextElementSibling.innerHTML = "";
     birthdayField.style.border = "1px solid #CCCCCC";
-    birthdayField.nextElementSibling.innerHTML = "";    
+    birthdayField.nextElementSibling.innerHTML = "";
     mobileField.style.border = "1px solid #CCCCCC";
     mobileField.nextElementSibling.innerHTML = "";
 

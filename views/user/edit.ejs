@@ -14,46 +14,41 @@
     <main>
       <div class="container-fluid px-4">
         <h1 class="mt-4">編輯資料</h1>
-        <div class="row my-3">
-          <div class="col-6">
-            <div class="card">
-              <div class="card-body">
+
+            <div class="card my-3" style="max-width: 45rem">
+              <div class="card-body p-5">
                 <form name="form1" onsubmit="sendData(event)">
                   <div class="mb-3">
                     <label for="name" class="form-label">編號</label>
-                    <input
-                      type="text"
-                      class="form-control"
-                      value="<%= sid %>"
-                      disabled
-                    />
+                    <input type="text" class="form-control" value="<%= sid %>" disabled />
                   </div>
-                  <div class="mb-3">
-                    <label for="name" class="form-label"
-                      ><span class="required">**</span> 姓名</label
-                    >
-                    <input
-                      type="text"
-                      class="form-control"
-                      id="name"
-                      name="name"
-                      value="<%= name %>"
-                    />
-                    <div class="form-text"></div>
-                  </div>
+                
 
-                  <div class="mb-3">
-                    <label for="birthday" class="form-label">生日</label>
-                    <input
-                      type="date"
-                      class="form-control"
-                      id="birthday"
-                      name="birthday"
-                      value="<%= birthday %>"
-                    />
-                    <div class="form-text"></div>
+                  <div class="row">
+                    <div class="col-md-6 mb-3">
+                      <label for="name" class="form-label"><span class="required">**</span> 姓名</label>
+                      <input
+                        type="text"
+                        class="form-control"
+                        id="name"
+                        name="name"
+                        value="<%= name %>"
+                      />
+                      <div class="form-text"></div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label for="birthday" class="form-label">生日</label>
+                      <input
+                        type="date"
+                        class="form-control"
+                        id="birthday"
+                        name="birthday"
+                        value="<%= birthday %>"
+                      />
+                      <div class="form-text"></div>
+                    </div>
                   </div>
-
+                
                   <div class="mb-3">
                     <label for="mobile" class="form-label">手機號碼</label>
                     <input
@@ -65,7 +60,7 @@
                     />
                     <div class="form-text"></div>
                   </div>
-
+                
                   <div class="mb-3">
                     <label for="product_id" class="form-label">產品序號</label>
                     <input
@@ -77,43 +72,47 @@
                     ></input>
                     <div class="form-text"></div>
                   </div>
+                
 
-                  <div class="mb-3">
-                    <label for="purchase_date" class="form-label"
-                      >購買日期</label
-                    >
-                    <input
-                      type="date"
-                      class="form-control"
-                      id="purchase_date"
-                      name="purchase_date"
-                      value="<%= purchase_date %>"
-                    />
-                    <div class="form-text"></div>
+                  <div class="row">
+                    <div class="col-md-6 mb-3">
+                      <label for="purchase_date" class="form-label">購買日期</label>
+                      <input
+                        type="date"
+                        class="form-control"
+                        id="purchase_date"
+                        name="purchase_date"
+                        value="<%= purchase_date %>"
+                      />
+                      <div class="form-text"></div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label for="purchase_source" class="form-label">購買來源</label>
+                      <select id="purchase_source" name="purchase_source" class="form-select">
+                        <option>---請選擇購買來源---</option>
+                        <option value="網路購買" <%= purchase_source === '網路購買' ? 'selected' : '' %>>
+                          網路購買
+                        </option>
+                        <option value="實體店面" <%= purchase_source === '實體店面' ? 'selected' : '' %>>
+                          實體店面
+                        </option>
+                        <option value="其他" <%= purchase_source === '其他' ? 'selected' : '' %>>
+                          其他
+                        </option>
+                      </select>
+                      <div class="form-text"></div>
+                    </div>
                   </div>
-
-                  <div class="mb-3">
-                    <label for="purchase_source" class="form-label"
-                      >購買來源</label
-                    >
-                    <select id="purchase_source" name="purchase_source" class="form-select" >
-                      <option>---請選擇購買來源---</option>
-                      <option value="網路購買" <%= purchase_source === '網路購買' ? 'selected' : '' %>>網路購買</option>
-                      <option value="實體店面" <%= purchase_source === '實體店面' ? 'selected' : '' %>>實體店面</option>
-                      <option value="其他" <%= purchase_source === '其他' ? 'selected' : '' %>>其他</option>
-                    </select>
-                    
-                    <div class="form-text"></div>
+                
+                  <div class="d-flex justify-content-end gap-2 mt-5">
+                    <button type="submit" class="btn btn-dark">修改資料</button>
+                    <a href="/user" class="btn btn-secondary">到列表頁</a>
                   </div>
-
-                  <button type="submit" class="btn btn-primary">修改</button>
-                  <a href="/user" class="btn btn-secondary">到列表頁</a>
-
                 </form>
+                
               </div>
             </div>
-          </div>
-        </div>
+
       </div>
     </main>
   </div>
@@ -145,7 +144,7 @@
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
           繼續修改
         </button>
-        <a href="/user" class="btn btn-primary">到列表頁</a>
+        <a href="/user" class="btn btn-dark">到列表頁</a>
       </div>
     </div>
   </div>
@@ -184,6 +183,15 @@
 <%- include("../parts/scripts") %>
 <script>
   const nameField = document.form1.name;
+
+    // 限制日期不能超過今天
+    document.addEventListener("DOMContentLoaded", function () {
+    const today = new Date().toISOString().split("T")[0]; // 取得今天日期
+
+    // 設定 max 屬性
+    document.getElementById("birthday").setAttribute("max", today);
+    document.getElementById("purchase_date").setAttribute("max", today);
+  });
 
 
   const sendData = (e) => {
