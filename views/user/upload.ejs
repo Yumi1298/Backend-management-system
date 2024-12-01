@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>匯入 Excel</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+      }
+      form {
+        margin-bottom: 20px;
+      }
+      .error {
+        color: red;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+      }
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>匯入 Excel</h1>
+    <form id="uploadForm" enctype="multipart/form-data">
+      <label for="file">選擇 CSV 檔案：</label>
+      <input type="file" id="file" name="file" accept=".csv" required />
+      <button type="submit">上傳</button>
+    </form>
+
+    <div id="errorMessage" class="error"></div>
+
+    <h2>上傳結果</h2>
+    <table id="resultsTable">
+      <thead>
+        <tr>
+          <th>名稱</th>
+          <th>生日</th>
+          <th>手機</th>
+          <th>產品ID</th>
+          <th>購買日期</th>
+          <th>購買來源</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- 結果會動態插入 -->
+      </tbody>
+    </table>
+
+    <script>
+      const uploadForm = document.getElementById("uploadForm");
+      const errorMessage = document.getElementById("errorMessage");
+      const resultsTable = document
+        .getElementById("resultsTable")
+        .querySelector("tbody");
+
+      uploadForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        errorMessage.textContent = "";
+        resultsTable.innerHTML = "";
+
+        const formData = new FormData(uploadForm);
+        try {
+          const response = await fetch("/upload", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            errorMessage.textContent = errorData.errors
+              ? errorData.errors.join(", ")
+              : "上傳失敗";
+            return;
+          }
+
+          const data = await response.json();
+          const rows = data.data;
+          rows.forEach((row) => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+            <td>${row.name}</td>
+            <td>${row.birthday}</td>
+            <td>${row.mobile}</td>
+            <td>${row.product_id}</td>
+            <td>${row.purchase_date}</td>
+            <td>${row.purchase_source}</td>
+          `;
+            resultsTable.appendChild(tr);
+          });
+        } catch (error) {
+          errorMessage.textContent = "發生錯誤，請稍後再試。";
+        }
+      });
+    </script>
+  </body>
+</html>
