@@ -1,10 +1,4 @@
-<%- include("../parts/html-head") %> 
-<style>
-  #deleteModal{
-    color: rgb(214, 1, 1);
-  }
-</style>
-<%- include("../parts/navbar") %>
+<%- include("../parts/html-head") %> <%- include("../parts/navbar") %>
 <div id="layoutSidenav">
   <%- include("../parts/layout-sidenav") %>
   <div id="layoutSidenav_content">
@@ -36,6 +30,8 @@
                     <input class="form-control" type="file" id="formFile" name="file" accept=".csv" required>
                   </div>
 
+                  <!-- <br /> -->
+
                   <p>**限使用cvs(utf-8)檔上傳</p>
                 <div id="errorMessage" class="error"></div>
               </div>
@@ -59,27 +55,26 @@
                 aria-label="Search"
                 value="<%= qs.keyword ? qs.keyword : '' %>"
               />
-              <button class="btn btn-dark" type="submit">Search</button>
+              <button class="btn btn-primary" type="submit">Search</button>
             </form>
           </div>
 
-          <div class="col-auto d-flex gap-2">
-            <a href="/user/add" class="btn btn-warning"> 新增資料 </a>
+          <div class="col-auto">
+            <a href="/user/add" class="btn btn-primary"> 新增資料 </a>
             <button
               type="button"
-              class="btn btn-warning"
+              class="btn btn-primary"
               data-bs-toggle="modal"
               data-bs-target="#uploadModal"
             >
-            <i class="fa-solid fa-file-arrow-up"></i> 匯入Excel
+              匯入Excel
             </button>
           </div>
         </div>
-
-        <div class="row my-3">
-          <div class="col overflow-auto" style="min-height: 465.5px;">
-            <table class="table table-bordered  table-hover" id="resultsTable">
-              <thead class="table-dark">
+        <div class="row">
+          <div class="col">
+            <table class="table table-bordered table-striped" id="resultsTable">
+              <thead>
                 <tr>
                   <th>編輯</th>
                   <th>編號</th>
@@ -110,7 +105,7 @@
 
                   <td>
                     <a href="javascript: deleteOne(<%= r.sid %>)" id="deleteModal"
-                      ><i class="fa-solid fa-ban"></i>
+                      ><i class="fa-solid fa-trash"></i>
                     </a>
                   </td>
                 </tr>
@@ -120,7 +115,7 @@
           </div>
         </div>
         <div class="row">
-          <div class="col-auto">
+          <div class="col-6">
             <nav aria-label="Page navigation example">
               <ul class="pagination">
                 <li class="page-item <%= page===1 ? 'disabled' : '' %>">
@@ -128,7 +123,7 @@
                     class="page-link"
                     href="?<%= new URLSearchParams({...qs, page: 1}) %>"
                   >
-                  <i class="fa-solid fa-angles-left"></i>
+                    <i class="fa-solid fa-circle-left"></i>
                   </a>
                 </li>
 
@@ -137,7 +132,7 @@
                     class="page-link"
                     href="?<%= new URLSearchParams({...qs, page: page-1}) %>"
                   >
-                  <i class="fa-solid fa-chevron-left"></i>
+                    <i class="fa-regular fa-circle-left"></i>
                   </a>
                 </li>
 
@@ -160,7 +155,7 @@
                     class="page-link"
                     href="?<%= new URLSearchParams({...qs, page: page+1}) %>"
                   >
-                  <i class="fa-solid fa-chevron-right"></i>
+                    <i class="fa-regular fa-circle-right"></i>
                   </a>
                 </li>
 
@@ -171,7 +166,7 @@
                     class="page-link"
                     href="?<%= new URLSearchParams({...qs, page: totalPages}) %>"
                   >
-                  <i class="fa-solid fa-angles-right"></i>
+                    <i class="fa-solid fa-circle-right"></i>
                   </a>
                 </li>
               </ul>

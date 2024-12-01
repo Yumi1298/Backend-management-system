@@ -66,16 +66,7 @@ const getListData = async (req) => {
     const sql2 = `SELECT * FROM clients c ${where} ORDER BY sid DESC LIMIT ${
       (page - 1) * perPage
     }, ${perPage} `;
-    // const sql2 = `SELECT ab.*, li.sid like_sid
-    //             FROM clients c
-    //             LEFT JOIN (
-    //               SELECT * FROM ab_likes WHERE member_id=${member_sid}
-    //             ) li ON ab.sid=li.ab_sid
-    //             ${where}
-    //             ORDER BY ab.sid DESC
-    //             LIMIT ${(page - 1) * perPage}, ${perPage} `;
-    // console.log(req.my_jwt);
-    // console.log(sql2);
+
     [rows] = await db.query(sql2);
 
     rows.forEach((r) => {
