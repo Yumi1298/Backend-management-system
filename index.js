@@ -1,12 +1,7 @@
-// console.log(process.env.DB_USER);
-// console.log(process.env.DB_PASS);
-
 import express from "express";
 import multer from "multer";
 import { z } from "zod";
 import cors from "cors";
-// const upload = multer({ dest: "tmp_uploads/" });
-// import { validateCsvData, parseCsv } from "./utils/csvHandler.js";
 import abRouter from "./routes/user.js";
 
 const app = express();
@@ -38,14 +33,6 @@ app.use((req, res, next) => {
 app.get("/", (req, res) => {
   res.render("home", { name: "Shinder" });
 });
-
-// // 測試上傳單一個欄位單一個檔案
-// app.post("/try-upload", upload.single("avatar"), (req, res) => {
-//   res.json({
-//     file: req.file,
-//     body: req.body,
-//   });
-// });
 
 app.use("/user", abRouter);
 

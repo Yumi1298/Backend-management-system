@@ -3,7 +3,7 @@ import moment from "moment-timezone";
 import db from "../utils/connect-mysql.js";
 import multer from "multer";
 // import upload from "../middlewares/upload.js";
-import { parseCSV } from "../utils/csvHandler.js";
+import { parseCSV } from "../utils/csv-handler.js";
 
 const dateFormat = "YYYY-MM-DD";
 const router = express.Router();
