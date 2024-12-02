@@ -1,6 +1,6 @@
 <%- include("../parts/html-head") %> 
 <style>
-  #deleteModal{
+  .fa-ban{
     color: rgb(214, 1, 1);
   }
 </style>
@@ -41,43 +41,15 @@
                 <div id="errorMessage" class="error"></div>
               </div>
               <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="cancelButton">
+                  取消
+                </button>
                 <button class="btn btn-dark" type="submit">上傳</button>
               </div>
             </form>
             </div>
           </div>
         </div>
-        <!-- delete Modal -->
-        <div
-            class="modal fade"
-            id="confirmDeleteModal"
-            tabindex="-1"
-            aria-labelledby="confirmDeleteModal"
-            aria-hidden="true"
-          >
-            <div class="modal-dialog">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h1 class="modal-title fs-5" id="confirmDeleteLabel">刪除一筆資料</h1>
-                  <button
-                    type="button"
-                    class="btn-close"
-                    data-bs-dismiss="modal"
-                    aria-label="Close"
-                  ></button>
-                </div>
-                <div class="modal-body">
-                  <div class="alert alert-danger" role="alert">確定要刪除這筆資料嗎?</div>
-                </div>
-                <div class="modal-footer">
-                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    取消
-                  </button>
-                  <a href="/user" class="btn btn-danger" id="confirmDeleteBtn">確定</a>
-                </div>
-              </div>
-            </div>
-          </div>
 
           <!-- content -->
         <h1 class="mt-4">客戶資料管理</h1>
@@ -142,9 +114,8 @@
                   <td><%= r.purchase_source %></td>
 
                   <td>
-                    <a href="#" id="deleteModal" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal" 
-                    onclick="prepareDelete(<%= r.sid %>)">
-                    <i class="fa-solid fa-ban"></i>
+
+                  <a href="javascript: deleteOne(<%= r.sid %>)"><i class="fa-solid fa-ban"></i>
                   </a>
                   </td>
                 </tr>
@@ -219,26 +190,16 @@
 
 <%- include("../parts/scripts") %>
 <script>
-let deleteSid = null; // 用於儲存待刪除的 sid
-
-// 設定 Modal 的 sid
-function prepareDelete(sid) {
-  deleteSid = sid; // 暫存 sid
-}
-
-// 執行刪除
-document.getElementById("confirmDeleteBtn").addEventListener("click", async () => {
-  if (deleteSid !== null) {
-    const r = await fetch(`/user/${deleteSid}`, {
-      method: "DELETE",
-    });
-    const result = await r.json();
-    console.log(result);
-    deleteSid = null; // 清空暫存的 sid
-    location.reload(); // 重載頁面
-  }
-});
-
+  const deleteOne = async sid => {
+          if (confirm(`是否要刪除編號為 ${sid} 的資料?`)) {
+            const r = await fetch(`/user/${sid}`, {
+              method: 'DELETE'
+            });
+            const result = await r.json();
+            console.log(result);
+            location.reload(); // 重載頁面
+          }
+        };
 
   const uploadForm = document.getElementById("uploadForm");
   const errorMessage = document.getElementById("errorMessage");
@@ -278,6 +239,11 @@ document.getElementById("confirmDeleteBtn").addEventListener("click", async () =
     }
   });
 
+
+  document.getElementById("cancelButton").addEventListener("click", () => {
+  // 清除選擇的檔案
+  document.getElementById("formFile").value = "";
+});
 </script>
 
 <%- include("../parts/html-foot") %>

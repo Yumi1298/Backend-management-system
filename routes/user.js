@@ -192,12 +192,29 @@ router.delete("/:sid", async (req, res) => {
     result: {},
   };
   let sid = +req.params.sid || 0;
+
   if (sid) {
-    const sql = `DELETE FROM clients WHERE sid=${sid}`;
-    const [result] = await db.query(sql);
-    output.result = result;
-    output.success = !!result.affectedRows;
+    try {
+      // 使用參數化查詢
+      const sql = `DELETE FROM clients WHERE sid = ?`;
+      const [result] = await db.query(sql, [sid]);
+
+      output.result = result;
+      output.success = !!result.affectedRows;
+
+      // 增加日誌記錄
+      console.log(`成功刪除 sid=${sid} 的資料`, result);
+    } catch (error) {
+      // 錯誤處理
+      console.error(`刪除 sid=${sid} 的資料時發生錯誤`, error);
+      output.success = false;
+      output.error = error.message;
+    }
+  } else {
+    // 無效的 sid
+    output.error = "無效的 ID";
   }
+
   res.json(output);
 });
 
