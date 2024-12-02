@@ -1,10 +1,13 @@
 import express from "express";
 import moment from "moment-timezone";
 import db from "../utils/connect-mysql.js";
-import upload from "../utils/csvHandler.js";
+import multer from "multer";
+// import upload from "../middlewares/upload.js";
+import { parseCSV } from "../utils/csv-handler.js";
 
 const dateFormat = "YYYY-MM-DD";
 const router = express.Router();
+const upload = multer({ dest: "uploads/" });
 
 const getListData = async (req) => {
   let keyword = req.query.keyword || ""; // 預設值為空字串
@@ -30,7 +33,7 @@ const getListData = async (req) => {
       c.name LIKE ${db.escape(`%${keyword}%`)} 
       OR
       c.mobile LIKE ${db.escape(`%${keyword}%`)} 
-      OR
+      
     )
     `;
   }
@@ -63,16 +66,7 @@ const getListData = async (req) => {
     const sql2 = `SELECT * FROM clients c ${where} ORDER BY sid DESC LIMIT ${
       (page - 1) * perPage
     }, ${perPage} `;
-    // const sql2 = `SELECT ab.*, li.sid like_sid
-    //             FROM clients c
-    //             LEFT JOIN (
-    //               SELECT * FROM ab_likes WHERE member_id=${member_sid}
-    //             ) li ON ab.sid=li.ab_sid
-    //             ${where}
-    //             ORDER BY ab.sid DESC
-    //             LIMIT ${(page - 1) * perPage}, ${perPage} `;
-    // console.log(req.my_jwt);
-    // console.log(sql2);
+
     [rows] = await db.query(sql2);
 
     rows.forEach((r) => {
@@ -262,6 +256,53 @@ router.get("/:sid", async (req, res) => {
     row.purchase_date = moment(row.purchase_date).format(dateFormat);
   }
   res.json({ success: true, data: row });
+});
+
+router.post("/upload", upload.single("file"), async (req, res) => {
+  try {
+    // 確認檔案是否存在
+    if (!req.file) {
+      return res.status(400).json({ errors: ["未找到檔案，請重新上傳"] });
+    }
+
+    // 驗證檔案格式是否為 CSV
+    const fileExtension = req.file.originalname.split(".").pop().toLowerCase();
+    if (fileExtension !== "csv") {
+      return res
+        .status(400)
+        .json({ errors: ["檔案格式不支援，僅接受 CSV 檔案"] });
+    }
+
+    // 解析 CSV 檔案並驗證資料
+    const filePath = req.file.path;
+    const { validRows, errors } = await parseCSV(filePath);
+
+    if (errors.length > 0) {
+      return res.status(400).json({ errors });
+    }
+
+    // 將資料寫入資料庫
+    const insertQuery = `
+      INSERT INTO clients (name, birthday, mobile, product_id, purchase_date, purchase_source)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `;
+
+    for (const row of validRows) {
+      await db.execute(insertQuery, [
+        row.name,
+        row.birthday,
+        row.mobile,
+        row.product_id,
+        row.purchase_date,
+        row.purchase_source,
+      ]);
+    }
+
+    res.status(200).json({ message: "資料上傳並儲存成功", data: validRows });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ errors: ["伺服器發生錯誤，請稍後再試"] });
+  }
 });
 
 export default router;

@@ -16,7 +16,7 @@ export const parseCSV = async (filePath) => {
     } = row;
 
     // 驗證邏輯
-    // if (!name || name.length < 2)
+    // if (!name || name.length <= 2)
     //   errors.push(`第 ${index + 1} 行: 姓名需超過兩個字`);
     // if (!/^\d{4}-\d{2}-\d{2}$/.test(birthday))
     //   errors.push(`第 ${index + 1} 行: 生日格式不符 (YYYY-MM-DD)`);
