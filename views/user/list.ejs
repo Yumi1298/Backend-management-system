@@ -98,6 +98,7 @@
                 </tr>
               </thead>
               <tbody>
+                <% if (Array.isArray(rows) && rows.length > 0) { %>
                 <% for(let r of rows){ %>
                 <tr>
                   <td>
@@ -119,6 +120,11 @@
                   </a>
                   </td>
                 </tr>
+                <% } %>
+                <% } else { %>
+                  <tr>
+                    <td colspan="4">No data found</td>
+                  </tr>
                 <% } %>
               </tbody>
             </table>

@@ -11,7 +11,6 @@ const upload = multer({ dest: "uploads/" });
 
 const getListData = async (req) => {
   let keyword = req.query.keyword || ""; // 預設值為空字串
-
   let birthBegin = req.query.birthBegin || ""; // 這個日期之後出生的
   let birthEnd = req.query.birthEnd || ""; // 這個日期之前出生的
 
@@ -66,7 +65,7 @@ const getListData = async (req) => {
     }
 
     const member_sid = req.my_jwt?.id ? req.my_jwt?.id : 0;
-    const sql2 = `SELECT * FROM clients c ${where} ORDER BY sid DESC LIMIT ${
+    const sql2 = `SELECT * FROM clients c ${where} ORDER BY sid LIMIT ${
       (page - 1) * perPage
     }, ${perPage} `;
 
@@ -95,8 +94,16 @@ const getListData = async (req) => {
 
 router.get("/", async (req, res) => {
   res.locals.pageName = "list";
-  const result = await getListData(req);
-  return res.render("user/list", result);
+  const data = await getListData(req);
+  return res.render("user/list", {
+    success: data.success,
+    totalRows: data.totalRows,
+    totalPages: data.totalPages,
+    page: data.page,
+    perPage: data.perPage,
+    rows: data.rows,
+    qs: req.query, // 確保將 req.query 傳遞給 EJS
+  });
 });
 
 // 呈現新增資料的表單
