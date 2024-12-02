@@ -3,7 +3,9 @@ import multer from "multer";
 import { z } from "zod";
 import cors from "cors";
 import abRouter from "./routes/user.js";
+import dotenv from "dotenv";
 
+dotenv.config();
 const app = express();
 app.set("view engine", "ejs");
 
