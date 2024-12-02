@@ -33,7 +33,10 @@ const getListData = async (req) => {
       c.name LIKE ${db.escape(`%${keyword}%`)} 
       OR
       c.mobile LIKE ${db.escape(`%${keyword}%`)} 
-      
+      OR
+      c.product_id LIKE ${db.escape(`%${keyword}%`)} 
+      OR
+      c.purchase_source LIKE ${db.escape(`%${keyword}%`)}
     )
     `;
   }
