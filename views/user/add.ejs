@@ -1,5 +1,4 @@
 <%- include("../parts/html-head") %>
-
 <style>
   .required {
     color: red;
@@ -8,13 +7,8 @@
   .form-text {
     color: red;
   }
-
-  #purchase-source option:first-child {
-    color: #888; /* 設置灰色 */
-  }
 </style>
 <%- include("../parts/navbar") %>
-
 <div id="layoutSidenav">
   <%- include("../parts/layout-sidenav") %>
   <div id="layoutSidenav_content">
@@ -99,7 +93,7 @@
                     name="purchase_source"
                     class="form-select"
                   >
-                    <option>---請選擇購買來源---</option>
+                    <option value="">---請選擇購買來源---</option>
                     <option value="網路購買">網路購買</option>
                     <option value="實體店面">實體店面</option>
                     <option value="其他">其他</option>
@@ -157,57 +151,104 @@
   const nameField = document.form1.name;
   const birthdayField = document.form1.birthday;
   const mobileField = document.form1.mobile;
+  const purchase_date = document.form1.purchase_date;
+  const product_id = document.form1.product_id;
+  const purchase_source = document.form1.purchase_source;
 
   // 限制日期不能超過今天
   document.addEventListener("DOMContentLoaded", function () {
     const today = new Date().toISOString().split("T")[0]; // 取得今天日期
-
-    // 設定 max 屬性
-    document.getElementById("birthday").setAttribute("max", today);
-    document.getElementById("purchase_date").setAttribute("max", today);
+    setMaxDate("birthday", today);
+    setMaxDate("purchase_date", today);
   });
 
-  function validateBirthday(birthday) {
-    var re = /^\d{4}-\d{2}-\d{2}$/;
-    return re.test(birthday);
+  // 設定 max 屬性
+  function setMaxDate(fieldId, date) {
+    document.getElementById(fieldId).setAttribute("max", date);
   }
 
+  // 驗證日期格式
+  function validateDate(date) {
+    var re = /^\d{4}-\d{2}-\d{2}$/;
+    return re.test(date);
+  }
+
+  // 驗證手機格式
   function validateMobile(mobile) {
     var re = /^09\d{8}$/;
     return re.test(mobile);
   }
 
+  // 檢查數字格式
+  function validateNumber(value) {
+    return !isNaN(Number(value));
+  }
+
+  // 檢查選項是否有效
+  function validateSelect(value, validOptions) {
+    return validOptions.includes(value);
+  }
+
+  // 清除提示與樣式
+  function resetFieldStyle(field) {
+    field.style.border = "1px solid #CCCCCC";
+    field.nextElementSibling.innerHTML = "";
+  }
+
+  // 驗證表單資料
   const sendData = (e) => {
     e.preventDefault();
 
-    // 回復沒有提示的狀態
-    nameField.style.border = "1px solid #CCCCCC";
-    nameField.nextElementSibling.innerHTML = "";
-    birthdayField.style.border = "1px solid #CCCCCC";
-    birthdayField.nextElementSibling.innerHTML = "";
-    mobileField.style.border = "1px solid #CCCCCC";
-    mobileField.nextElementSibling.innerHTML = "";
+    // 重置欄位樣式
+    [
+      nameField,
+      birthdayField,
+      mobileField,
+      purchase_date,
+      product_id,
+      purchase_source,
+    ].forEach(resetFieldStyle);
 
     let isPass = true; // 有沒有通過檢查
 
-    // TODO: 要做欄位資料檢查
+    // 姓名檢查
     if (nameField.value.length < 2) {
       isPass = false;
-      // 跳提示用戶
-      nameField.style.border = "1px solid red";
-      nameField.nextElementSibling.innerHTML = "請填寫正確的姓名";
+      setError(nameField, "請填寫正確的姓名");
     }
 
-    if (!validateBirthday(birthday.value)) {
+    // 生日檢查
+    if (!validateDate(birthdayField.value)) {
       isPass = false;
-      birthday.style.border = "1px solid red";
-      birthday.nextElementSibling.innerHTML = "請填寫正確的日期格式";
+      setError(birthdayField, "請填寫正確的日期格式");
     }
 
-    if (!validateMobile(mobile.value)) {
+    // 手機檢查
+    if (!validateMobile(mobileField.value)) {
       isPass = false;
-      mobile.style.border = "1px solid red";
-      mobile.nextElementSibling.innerHTML = "請填寫正確的手機";
+      setError(mobileField, "請填寫正確的手機");
+    }
+
+    // 購買日期檢查
+    if (purchase_date.value && !validateDate(purchase_date.value)) {
+      isPass = false;
+      setError(purchase_date, "請填寫正確的日期格式");
+    }
+
+    // 產品序號檢查
+    if (product_id.value && !validateNumber(product_id.value)) {
+      isPass = false;
+      setError(product_id, "請填寫正確的產品序號格式(數字)");
+    }
+
+    // 購買來源檢查
+    const validPurchaseSources = ["其他", "實體店面", "網路購買"];
+    if (
+      purchase_source.value &&
+      !validateSelect(purchase_source.value, validPurchaseSources)
+    ) {
+      isPass = false;
+      setError(purchase_source, "請填寫正確的來源");
     }
 
     // 如果欄位資料都有通過檢查
@@ -234,6 +275,13 @@
     }
   };
 
+  // 設置錯誤提示與樣式
+  function setError(field, message) {
+    field.style.border = "1px solid red";
+    field.nextElementSibling.innerHTML = message;
+  }
+
   const myModal = new bootstrap.Modal("#exampleModal");
 </script>
+
 <%- include("../parts/html-foot") %>
