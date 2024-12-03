@@ -1,9 +1,7 @@
 import dotenv from "dotenv";
 import mysql from "mysql2/promise";
-
 // 加載 .env 檔案
 dotenv.config();
-
 const { DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_PORT } = process.env;
 console.log({ DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_PORT });
 
@@ -12,6 +10,7 @@ const db = mysql.createPool({
   user: DB_USER,
   password: DB_PASS,
   database: DB_NAME,
+  port: 3306,
   waitForConnections: true,
   connectionLimit: 5,
   queueLimit: 0,

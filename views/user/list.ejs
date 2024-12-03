@@ -12,10 +12,10 @@
       <div class="container-fluid px-4">
         <!-- upload Modal -->
         <div
-          class="modal fade"
-          id="uploadModal"
-          tabindex="-1"
-          aria-hidden="true"
+        class="modal fade"
+        id="uploadModal"
+        tabindex="-1"
+        aria-hidden="true"
         >
           <div class="modal-dialog">
             <div class="modal-content">
@@ -23,22 +23,18 @@
                 <h1 class="modal-title fs-5">
                   上傳檔案
                 </h1>
-                <button
-                  type="button"
-                  class="btn-close"
-                  data-bs-dismiss="modal"
-                  aria-label="Close"
-                ></button>
+
               </div>
               <div class="modal-body">
                 <form id="uploadForm" enctype="multipart/form-data">
                   <div class="mb-3">
-                    <label for="formFile" class="form-label">選擇 CSV 檔案：</label>
-                    <input class="form-control" type="file" id="formFile" name="file" accept=".csv" required>
+                    <label for="formFile" class="form-label">選擇xlsx檔案：</label>
+                  <span style="color: red;">**限使用xlsx檔上傳</ㄇ>
+
+                    <input class="form-control" type="file" id="fileInput" name="file" accept=".xlsx" required>
                   </div>
 
-                  <p style="color: red;">**限使用cvs(utf-8)檔上傳</p>
-                <div id="errorMessage" class="error"></div>
+                <div id="errorMessage" class="error" style="color: red;"></div>
               </div>
               <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="cancelButton">
@@ -212,43 +208,51 @@
   const resultsTable = document
     .getElementById("resultsTable")
     .querySelector("tbody");
+const cancelButton = document.getElementById("cancelButton");
 
-  uploadForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    errorMessage.textContent = ""; // 清空錯誤訊息
-    resultsTable.innerHTML = ""; // 清空表格
 
-    const formData = new FormData(uploadForm);
-    try {
-      const response = await fetch("/user/upload", {
-        method: "POST",
-        body: formData,
-      });
+uploadForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  errorMessage.textContent = ""; // 清空錯誤訊息
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        errorMessage.textContent = errorData.errors
-          ? errorData.errors.join(", ")
-          : "上傳失敗";
-        return;
+  const formData = new FormData();
+  const file = fileInput.files[0];
+
+  // 檢查檔案副檔名是否為 .xlsx
+  const fileExtension = file.name.split(".").pop().toLowerCase();
+  if (fileExtension !== "xlsx") {
+    errorMessage.textContent = "請上傳 .xlsx 格式的檔案"; // 檔案格式錯誤提示
+    return;
+  }
+
+  // 如果檔案格式正確，將檔案附加到 FormData
+  formData.append("file", file);
+
+  // 發送 AJAX 請求
+  fetch("/user/upload", {
+    method: "POST",
+    body: formData,
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (!data.success) {
+        // 如果後端返回錯誤訊息，顯示錯誤訊息
+        const errors = data.errors || [];
+        errorMessage.innerHTML = errors.map(error => `<p>${error}</p>`).join('');
+      } else {
+        // 成功後重新加載頁面
+        location.reload();
       }
+    })
+    .catch((error) => {
+      console.error("Error uploading file:", error);
+      errorMessage.textContent = "上傳過程發生錯誤，請稍後再試"; // 上傳錯誤提示
+    });
+});
 
-      const data = await response.json();
-      if (data.errors) {
-        errorMessage.textContent = data.errors.join(", ");
-        return;
-      }
-      location.reload(); // 重載頁面
-    } catch (error) {
-      errorMessage.textContent = "發生錯誤，請稍後再試。";
-      console.error("上傳錯誤:", error);
-    }
-  });
-
-
-  document.getElementById("cancelButton").addEventListener("click", () => {
-  // 清除選擇的檔案
-  document.getElementById("formFile").value = "";
+cancelButton.addEventListener("click", () => {
+  fileInput.value = ""; // 清除選擇的檔案
+  errorMessage.textContent = ""; // 清除錯誤訊息
 });
 </script>
 

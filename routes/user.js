@@ -2,12 +2,16 @@ import express from "express";
 import moment from "moment-timezone";
 import db from "../utils/connect-mysql.js";
 import multer from "multer";
-// import upload from "../middlewares/upload.js";
-import { parseCSV } from "../utils/csv-handler.js";
+import xlsx from "xlsx";
+import upload from "../middlewares/upload.js";
+// import { parseCSV } from "../utils/csv-handler.js";
 
 const dateFormat = "YYYY-MM-DD";
 const router = express.Router();
-const upload = multer({ dest: "uploads/" });
+// const upload = multer({
+//   dest: "uploads/",
+//   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+// });
 
 const getListData = async (req) => {
   let keyword = req.query.keyword || ""; // 預設值為空字串
@@ -358,48 +362,98 @@ router.get("/:sid", async (req, res) => {
 
 router.post("/upload", upload.single("file"), async (req, res) => {
   try {
-    // 確認檔案是否存在
+    // 檢查是否有檔案
     if (!req.file) {
-      return res.status(400).json({ errors: ["未找到檔案，請重新上傳"] });
-    }
-
-    // 驗證檔案格式是否為 CSV
-    const fileExtension = req.file.originalname.split(".").pop().toLowerCase();
-    if (fileExtension !== "csv") {
       return res
         .status(400)
-        .json({ errors: ["檔案格式不支援，僅接受 CSV 檔案"] });
+        .send({ success: false, message: "No file uploaded" });
     }
 
-    // 解析 CSV 檔案並驗證資料
     const filePath = req.file.path;
-    const { validRows, errors } = await parseCSV(filePath);
+    console.log("File uploaded at:", filePath);
 
-    if (errors.length > 0) {
-      return res.status(400).json({ errors });
+    // 解析 Excel 檔案
+    const workbook = xlsx.readFile(filePath);
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const data = xlsx.utils.sheet_to_json(sheet);
+
+    console.log("Parsed data:", data);
+
+    // 資料驗證
+    const errors = [];
+    const validData = [];
+
+    const excelDateToJSDate = (serial) => {
+      const excelEpoch = new Date(1899, 11, 30); // Excel 日期起始點（1900-01-01 的前一天）
+      return new Date(excelEpoch.getTime() + serial * 86400000)
+        .toISOString()
+        .split("T")[0];
+    };
+
+    data.forEach((row, index) => {
+      const {
+        name,
+        birthday,
+        mobile,
+        product_id,
+        purchase_date,
+        purchase_source,
+      } = row;
+
+      let formattedBirthday = birthday;
+      let formattedPurchaseDate = purchase_date;
+
+      // 將數值日期轉換為標準格式
+      if (typeof birthday === "number") {
+        formattedBirthday = excelDateToJSDate(birthday);
+      }
+
+      if (typeof purchase_date === "number") {
+        formattedPurchaseDate = excelDateToJSDate(purchase_date);
+      }
+
+      // 資料驗證規則
+      if (!name || name.length < 2) {
+        errors.push(`Row ${index + 2}: Name格式不正確`);
+      } else if (
+        !formattedBirthday ||
+        !/^\d{4}-\d{2}-\d{2}$/.test(formattedBirthday)
+      ) {
+        errors.push(`Row ${index + 2}: Birthday格式不正確`);
+      } else if (!mobile || !/^09\d{8}$/.test(mobile)) {
+        errors.push(`Row ${index + 2}: Mobile格式不正確`);
+      } else {
+        validData.push([
+          name,
+          formattedBirthday,
+          mobile,
+          product_id || null,
+          formattedPurchaseDate || null,
+          purchase_source || null,
+        ]);
+      }
+    });
+
+    if (errors.length) {
+      console.log("Validation errors:", errors);
+      return res.status(400).send({ success: false, errors });
     }
 
-    // 將資料寫入資料庫
-    const insertQuery = `
+    console.log("Valid data:", validData);
+
+    // 插入資料到資料庫
+    const query = `
       INSERT INTO clients (name, birthday, mobile, product_id, purchase_date, purchase_source)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `;
+      VALUES ?`;
+    await db.query(query, [validData]); // 使用回調式查詢
 
-    for (const row of validRows) {
-      await db.execute(insertQuery, [
-        row.name,
-        row.birthday,
-        row.mobile,
-        row.product_id,
-        row.purchase_date,
-        row.purchase_source,
-      ]);
-    }
-
-    res.status(200).json({ message: "資料上傳並儲存成功", data: validRows });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ errors: ["伺服器發生錯誤，請稍後再試"] });
+    // 成功回應
+    return res.send({ success: true, message: "Data uploaded successfully!" });
+  } catch (err) {
+    console.error("Error processing request:", err);
+    return res
+      .status(500)
+      .send({ success: false, message: "Server error", error: err.message });
   }
 });
 

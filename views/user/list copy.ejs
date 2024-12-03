@@ -1,14 +1,21 @@
-<%- include("../parts/html-head") %> <%- include("../parts/navbar") %>
+<%- include("../parts/html-head") %> 
+<style>
+  .fa-ban{
+    color: rgb(214, 1, 1);
+  }
+</style>
+<%- include("../parts/navbar") %>
 <div id="layoutSidenav">
   <%- include("../parts/layout-sidenav") %>
   <div id="layoutSidenav_content">
     <main>
       <div class="container-fluid px-4">
+        <!-- upload Modal -->
         <div
-          class="modal fade"
-          id="uploadModal"
-          tabindex="-1"
-          aria-hidden="true"
+        class="modal fade"
+        id="uploadModal"
+        tabindex="-1"
+        aria-hidden="true"
         >
           <div class="modal-dialog">
             <div class="modal-content">
@@ -16,36 +23,34 @@
                 <h1 class="modal-title fs-5">
                   上傳檔案
                 </h1>
-                <button
-                  type="button"
-                  class="btn-close"
-                  data-bs-dismiss="modal"
-                  aria-label="Close"
-                ></button>
+
               </div>
               <div class="modal-body">
                 <form id="uploadForm" enctype="multipart/form-data">
                   <div class="mb-3">
-                    <label for="formFile" class="form-label">選擇 CSV 檔案：</label>
-                    <input class="form-control" type="file" id="formFile" name="file" accept=".csv" required>
+                    <label for="formFile" class="form-label">選擇xlsx檔案：</label>
+                  <span style="color: red;">**限使用xlsx檔上傳</ㄇ>
+
+                    <input class="form-control" type="file" id="fileInput" name="file" accept=".xlsx" required>
                   </div>
 
-                  <!-- <br /> -->
-
-                  <p>**限使用cvs(utf-8)檔上傳</p>
-                <div id="errorMessage" class="error"></div>
+                <div id="errorMessage" class="error" style="color: red;"></div>
               </div>
               <div class="modal-footer">
-                <button class="btn btn-primary" type="submit">上傳</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="cancelButton">
+                  取消
+                </button>
+                <button class="btn btn-dark" type="submit">上傳</button>
               </div>
             </form>
             </div>
           </div>
         </div>
 
+          <!-- content -->
         <h1 class="mt-4">客戶資料管理</h1>
         <div class="row my-3 d-flex justify-content-between">
-          <div class="col-6 col-lg-3">
+          <div class="col-12 col-lg-3 col-md-6">
             <form class="d-flex" role="search">
               <input
                 class="form-control me-2"
@@ -55,26 +60,27 @@
                 aria-label="Search"
                 value="<%= qs.keyword ? qs.keyword : '' %>"
               />
-              <button class="btn btn-primary" type="submit">Search</button>
+              <button class="btn btn-dark" type="submit">Search</button>
             </form>
           </div>
 
-          <div class="col-auto">
-            <a href="/user/add" class="btn btn-primary"> 新增資料 </a>
+          <div class="col-auto d-flex gap-2  mt-2">
+            <a href="/user/add" class="btn btn-warning"> 新增資料 </a>
             <button
               type="button"
-              class="btn btn-primary"
+              class="btn btn-warning"
               data-bs-toggle="modal"
               data-bs-target="#uploadModal"
             >
-              匯入Excel
+            <i class="fa-solid fa-file-arrow-up"></i> 匯入Excel
             </button>
           </div>
         </div>
-        <div class="row">
-          <div class="col">
-            <table class="table table-bordered table-striped" id="resultsTable">
-              <thead>
+
+        <div class="row my-3">
+          <div class="col overflow-auto" style="min-height: 465.5px;">
+            <table class="table table-bordered  table-hover" id="resultsTable">
+              <thead class="table-dark">
                 <tr>
                   <th>編輯</th>
                   <th>編號</th>
@@ -88,6 +94,7 @@
                 </tr>
               </thead>
               <tbody>
+                <% if (Array.isArray(rows) && rows.length > 0) { %>
                 <% for(let r of rows){ %>
                 <tr>
                   <td>
@@ -104,18 +111,23 @@
                   <td><%= r.purchase_source %></td>
 
                   <td>
-                    <a href="javascript: deleteOne(<%= r.sid %>)" id="deleteModal"
-                      ><i class="fa-solid fa-trash"></i>
-                    </a>
+
+                  <a href="javascript: deleteOne(<%= r.sid %>)"><i class="fa-solid fa-ban"></i>
+                  </a>
                   </td>
                 </tr>
+                <% } %>
+                <% } else { %>
+                  <tr>
+                    <td colspan="4">No data found</td>
+                  </tr>
                 <% } %>
               </tbody>
             </table>
           </div>
         </div>
         <div class="row">
-          <div class="col-6">
+          <div class="col-auto">
             <nav aria-label="Page navigation example">
               <ul class="pagination">
                 <li class="page-item <%= page===1 ? 'disabled' : '' %>">
@@ -123,7 +135,7 @@
                     class="page-link"
                     href="?<%= new URLSearchParams({...qs, page: 1}) %>"
                   >
-                    <i class="fa-solid fa-circle-left"></i>
+                  <i class="fa-solid fa-angles-left"></i>
                   </a>
                 </li>
 
@@ -132,7 +144,7 @@
                     class="page-link"
                     href="?<%= new URLSearchParams({...qs, page: page-1}) %>"
                   >
-                    <i class="fa-regular fa-circle-left"></i>
+                  <i class="fa-solid fa-chevron-left"></i>
                   </a>
                 </li>
 
@@ -155,7 +167,7 @@
                     class="page-link"
                     href="?<%= new URLSearchParams({...qs, page: page+1}) %>"
                   >
-                    <i class="fa-regular fa-circle-right"></i>
+                  <i class="fa-solid fa-chevron-right"></i>
                   </a>
                 </li>
 
@@ -166,7 +178,7 @@
                     class="page-link"
                     href="?<%= new URLSearchParams({...qs, page: totalPages}) %>"
                   >
-                    <i class="fa-solid fa-circle-right"></i>
+                  <i class="fa-solid fa-angles-right"></i>
                   </a>
                 </li>
               </ul>
@@ -180,54 +192,65 @@
 
 <%- include("../parts/scripts") %>
 <script>
-  const deleteOne = async (sid) => {
-    if (confirm(`是否要刪除編號為 ${sid} 的資料?`)) {
-      const r = await fetch(`/user/${sid}`, {
-        method: "DELETE",
-      });
-      const result = await r.json();
-      console.log(result);
-      location.reload(); // 重載頁面
-    }
-  };
+  const deleteOne = async sid => {
+          if (confirm(`是否要刪除編號為 ${sid} 的資料?`)) {
+            const r = await fetch(`/user/${sid}`, {
+              method: 'DELETE'
+            });
+            const result = await r.json();
+            console.log(result);
+            location.reload(); // 重載頁面
+          }
+        };
 
   const uploadForm = document.getElementById("uploadForm");
   const errorMessage = document.getElementById("errorMessage");
   const resultsTable = document
     .getElementById("resultsTable")
     .querySelector("tbody");
+const cancelButton = document.getElementById("cancelButton");
 
-  uploadForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    errorMessage.textContent = ""; // 清空錯誤訊息
-    resultsTable.innerHTML = ""; // 清空表格
 
-    const formData = new FormData(uploadForm);
-    try {
-      const response = await fetch("/user/upload", {
-        method: "POST",
-        body: formData,
-      });
+    uploadForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  errorMessage.textContent = ""; // 清空錯誤訊息
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        errorMessage.textContent = errorData.errors
-          ? errorData.errors.join(", ")
-          : "上傳失敗";
-        return;
-      }
 
-      const data = await response.json();
-      if (data.errors) {
-        errorMessage.textContent = data.errors.join(", ");
-        return;
-      }
-      location.reload(); // 重載頁面
-    } catch (error) {
-      errorMessage.textContent = "發生錯誤，請稍後再試。";
-      console.error("上傳錯誤:", error);
-    }
-  });
+  const formData = new FormData();
+
+  const file = fileInput.files[0];
+
+  // 檢查檔案副檔名是否為 .xlsx
+  const fileExtension = file.name.split(".").pop().toLowerCase();
+  if (fileExtension !== "xlsx") {
+    errorMessage.textContent = "請上傳 .xlsx 格式的檔案"; // 檔案格式錯誤提示
+    return;
+  }
+
+  // 如果檔案格式正確，將檔案附加到 FormData
+  formData.append("file", file);
+
+  // 發送 AJAX 請求
+  fetch("/user/upload", {
+    method: "POST",
+    body: formData,
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      console.log("File uploaded successfully:", data);
+      // 成功後重新加載頁面
+      location.reload(); // 重新加載頁面
+    })
+    .catch((error) => {
+      console.error("Error uploading file:", error);
+      errorMessage.textContent = "上傳過程發生錯誤，請稍後再試"; // 上傳錯誤提示
+    });
+});
+
+cancelButton.addEventListener("click", () => {
+  fileInput.value = ""; // 清除選擇的檔案
+  errorMessage.textContent = ""; // 清除錯誤訊息
+});
 </script>
 
 <%- include("../parts/html-foot") %>

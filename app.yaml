@@ -1,0 +1,10 @@
+runtime: nodejs18
+
+env_variables:
+  NODE_ENV: "development"
+instance_class: F2
+handlers:
+  - url: /static
+    static_dir: public
+  - url: /.*
+    script: auto
