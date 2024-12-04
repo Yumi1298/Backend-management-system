@@ -14,27 +14,34 @@ const router = express.Router();
 // });
 
 const getListData = async (req) => {
-  let keyword = req.query.keyword || "";
-  let birthBegin = req.query.birthBegin || "";
-  let birthEnd = req.query.birthEnd || "";
+  let keyword = req.query.keyword || ""; // 預設值為空字串
+  let birthBegin = req.query.birthBegin || ""; // 這個日期之後出生的
+  let birthEnd = req.query.birthEnd || ""; // 這個日期之前出生的
 
-  const perPage = 10;
+  const perPage = 10; // 每頁最多有幾筆
   let page = +req.query.page || 1;
   if (page < 1) {
     return {
       success: false,
-      redirect: `?page=1`,
+      redirect: `?page=1`, // 需要轉向
       info: "page 值太小",
     };
   }
 
   let where = " WHERE 1 ";
   if (keyword) {
+    // where += ` AND \`name\` LIKE ${db.escape("%" + keyword + "%")} `;
     where += ` AND 
-      (c.name LIKE ${db.escape(`%${keyword}%`)} 
-      OR c.mobile LIKE ${db.escape(`%${keyword}%`)} 
-      OR c.product_id LIKE ${db.escape(`%${keyword}%`)} 
-      OR c.purchase_source LIKE ${db.escape(`%${keyword}%`)})`;
+    (
+      c.name LIKE ${db.escape(`%${keyword}%`)} 
+      OR
+      c.mobile LIKE ${db.escape(`%${keyword}%`)} 
+      OR
+      c.product_id LIKE ${db.escape(`%${keyword}%`)} 
+      OR
+      c.purchase_source LIKE ${db.escape(`%${keyword}%`)}
+    )
+    `;
   }
 
   birthBegin = moment(birthBegin);
@@ -46,34 +53,30 @@ const getListData = async (req) => {
     where += ` AND c.birthday <= '${birthEnd.format(dateFormat)}' `;
   }
 
-  // 取得排序欄位和排序方向
-  const sortBy = req.query.sortBy || "sid"; // 預設排序欄位為編號
-  const sortOrder = req.query.sortOrder === "desc" ? "DESC" : "ASC"; // 預設排序為升序
-
   const sql = `SELECT COUNT(*) totalRows FROM clients c ${where}`;
-  const [[{ totalRows }]] = await db.query(sql);
+  const [[{ totalRows }]] = await db.query(sql); // 取得總筆數
 
-  let totalPages = 0;
-  let rows = [];
+  let totalPages = 0; // 總頁數, 預設值設定 0
+  let rows = []; // 分頁資料
   if (totalRows > 0) {
     totalPages = Math.ceil(totalRows / perPage);
     if (page > totalPages) {
       return {
         success: false,
-        redirect: `?page=${totalPages}`,
+        redirect: `?page=${totalPages}`, // 需要轉向
         info: "page 值太大",
       };
     }
 
     const member_sid = req.my_jwt?.id ? req.my_jwt?.id : 0;
-    // 根據排序欄位和排序方向構建 SQL 查詢
-    const sql2 = `SELECT * FROM clients c ${where} ORDER BY ${sortBy} ${sortOrder} LIMIT ${
+    const sql2 = `SELECT * FROM clients c ${where} ORDER BY sid LIMIT ${
       (page - 1) * perPage
-    }, ${perPage}`;
+    }, ${perPage} `;
 
     [rows] = await db.query(sql2);
 
     rows.forEach((r) => {
+      // "JS 的 Date 類型" 轉換為日期格式的字串
       if (r.birthday) {
         r.birthday = moment(r.birthday).format(dateFormat);
       }

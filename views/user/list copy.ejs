@@ -83,13 +83,13 @@
               <thead class="table-dark">
                 <tr>
                   <th>編輯</th>
-                  <th data-sort="sid">編號 <i class="fa-solid fa-sort"></i></th>
-                  <th data-sort="name">姓名 <i class="fa-solid fa-sort"></i></th>
-                  <th data-sort="birthday">生日 <i class="fa-solid fa-sort"></i></th>
-                  <th data-sort="mobile">手機 <i class="fa-solid fa-sort"></i></th>
-                  <th data-sort="product_id">產品序號 <i class="fa-solid fa-sort"></i></th>
-                  <th data-sort="purchase_date">購買日期 <i class="fa-solid fa-sort"></i></th>
-                  <th data-sort="purchase_source">購買來源 <i class="fa-solid fa-sort"></i></th>
+                  <th>編號</th>
+                  <th>姓名</th>
+                  <th>生日</th>
+                  <th>手機</th>
+                  <th>產品序號</th>
+                  <th>購買日期</th>
+                  <th>購買來源</th>
                   <th>刪除</th>
                 </tr>
               </thead>
@@ -254,45 +254,6 @@ cancelButton.addEventListener("click", () => {
   fileInput.value = ""; // 清除選擇的檔案
   errorMessage.textContent = ""; // 清除錯誤訊息
 });
-
-
-document.querySelectorAll('th[data-sort]').forEach(th => {
-  th.addEventListener('click', function() {
-    const sortBy = this.getAttribute('data-sort');
-    const currentUrl = new URL(window.location.href);
-    const currentParams = new URLSearchParams(currentUrl.search);
-
-    // 切換排序方向：升序 (asc) / 降序 (desc)
-    const currentSortOrder = currentParams.get('sortOrder') === 'asc' ? 'desc' : 'asc';
-    
-    currentParams.set('sortBy', sortBy);
-    currentParams.set('sortOrder', currentSortOrder);
-    
-    // 更新網址並發送請求
-    window.location.href = `${currentUrl.pathname}?${currentParams.toString()}`;
-  });
-});
-
-
-// 當頁面加載時根據 URL 查詢參數來更新排序圖標
-const sortBy = new URLSearchParams(window.location.search).get('sortBy');
-const sortOrder = new URLSearchParams(window.location.search).get('sortOrder');
-
-document.querySelectorAll('th[data-sort]').forEach(th => {
-  const column = th.getAttribute('data-sort');
-  const icon = th.querySelector('i');
-
-  if (column === sortBy) {
-    if (sortOrder === 'asc') {
-      icon.classList.remove('fa-sort', 'fa-sort-down');
-      icon.classList.add('fa-sort-up');
-    } else {
-      icon.classList.remove('fa-sort', 'fa-sort-up');
-      icon.classList.add('fa-sort-down');
-    }
-  }
-});
-
 </script>
 
 <%- include("../parts/html-foot") %>
