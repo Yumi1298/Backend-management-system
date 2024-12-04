@@ -1,18 +1,32 @@
-<%- include("parts/html-head") %> 
+<%- include("parts/html-head") %>
+<style>
+  .my-back {
+    background-color: rgb(194, 232, 243);
+  }
+</style>
 <%- include("parts/navbar") %>
 <div id="layoutSidenav">
   <%- include("parts/layout-sidenav") %>
   <div id="layoutSidenav_content">
     <main>
-      <div class="container-fluid px-4">
-        <h1 class="mt-4">首頁</h1>
-        <div class="card mt-4">
-          <div class="card-body">
-            <h3>此專案使用node.js(express),ejs,Restful api, mySql製作完成</h3>
-          </div>
-        </div>
 
-    </div>
+<div class="container-fulid px-4 py-5 bg-light">
+      <div className="p-5 mb-4  rounded-3">
+        <div className="container-fluid py-5">
+          <h1 className="display-5 fw-bold">首頁</h1>
+          <p className="col-md-8 fs-4">
+            此專案使用node.js, ejs, Restful api, mySql製作完成。
+            <br>
+            請點擊側欄檢視功能
+          </p>
+          <a
+          class="btn btn-dark"
+          href="https://github.com/Yumi1298/Backend-management-system"
+        >
+          <i class="fa-brands fa-github"></i> github
+        </a>
+        </div>
+      </div>
     </main>
   </div>
 </div>
