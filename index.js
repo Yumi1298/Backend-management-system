@@ -33,8 +33,7 @@ app.use((req, res, next) => {
 // 1. get(): 只接受 HTTP GET 方法的拜訪
 // 2. 只接受 路徑為 / 的 request
 app.get("/", (req, res) => {
-  // res.render("home", { name: "Shinder" });
-  res.status(200).send("Server is running!");
+  res.render("home", { name: "Shinder" });
 });
 
 app.use("/user", abRouter);
