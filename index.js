@@ -69,6 +69,10 @@ app.get("/zod2/:index?", async (req, res) => {
   res.json(result);
 });
 
+setInterval(() => {
+  console.log("Server is alive...");
+}, 60000); // 每 60 秒輸出一次
+
 // ************* 設定靜態內容資料夾 *************
 app.use(express.static("public"));
 app.use("/bootstrap", express.static("node_modules/bootstrap/dist"));
@@ -91,4 +95,8 @@ process.on("uncaughtException", (err) => {
 
 process.on("unhandledRejection", (reason, promise) => {
   console.error("Unhandled Rejection at:", promise, "reason:", reason);
+});
+
+process.on("exit", (code) => {
+  console.log(`Process exited with code: ${code}`);
 });
