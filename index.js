@@ -83,3 +83,12 @@ const port = process.env.PORT || 8080;
 app.listen(port, () => {
   console.log(`伺服器啟動了, port: ${port}`);
 });
+
+// 捕獲未處理的異常
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught Exception:", err);
+});
+
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("Unhandled Rejection at:", promise, "reason:", reason);
+});
