@@ -79,7 +79,7 @@ app.use((req, res) => {
   res.status(404).send("<h1>您走錯路了</h1>");
 });
 
-const port = process.env.PORT || 8080;
+const port = process.env.PORT || 3001;
 app.listen(port, () => {
   console.log(`伺服器啟動了, port: ${port}`);
 });
