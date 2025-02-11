@@ -56,7 +56,7 @@
                 class="form-control me-2"
                 type="search"
                 name="keyword"
-                placeholder="Search"
+                placeholder="輸入姓名/電話/產品序號/購買來源"
                 aria-label="Search"
                 value="<%= qs.keyword ? qs.keyword : '' %>"
               />
@@ -65,6 +65,7 @@
           </div>
 
           <div class="col-auto d-flex gap-2  mt-2">
+            <button class="btn btn-danger" onclick="deleteSelectedUsers()">批量刪除</button>
             <a href="/user/add" class="btn btn-warning"> 新增資料 </a>
             <button
               type="button"
@@ -82,6 +83,7 @@
             <table class="table table-bordered  table-hover" id="resultsTable">
               <thead class="table-dark">
                 <tr>
+                  <th><input type="checkbox" id="select-all" class="form-check-input" onclick="toggleSelectAll(this)"></th>
                   <th>編輯</th>
                   <th data-sort="sid">編號 <i class="fa-solid fa-sort"></i></th>
                   <th data-sort="name">姓名 <i class="fa-solid fa-sort"></i></th>
@@ -97,6 +99,9 @@
                 <% if (Array.isArray(rows) && rows.length > 0) { %>
                 <% for(let r of rows){ %>
                 <tr>
+                  <td>
+                    <input type="checkbox" class="select-item form-check-input" value="<%= r.sid %>">
+                  </td>
                   <td>
                     <a href="/user/edit/<%= r.sid %>">
                       <i class="fa-solid fa-pen-to-square"></i>
@@ -205,9 +210,7 @@
 
   const uploadForm = document.getElementById("uploadForm");
   const errorMessage = document.getElementById("errorMessage");
-  const resultsTable = document
-    .getElementById("resultsTable")
-    .querySelector("tbody");
+  const fileInput = document.getElementById("fileInput");
 const cancelButton = document.getElementById("cancelButton");
 
 
@@ -221,14 +224,12 @@ uploadForm.addEventListener("submit", async (e) => {
   // 檢查檔案副檔名是否為 .xlsx
   const fileExtension = file.name.split(".").pop().toLowerCase();
   if (fileExtension !== "xlsx") {
-    errorMessage.textContent = "請上傳 .xlsx 格式的檔案"; // 檔案格式錯誤提示
+    errorMessage.textContent = "請上傳 .xlsx 格式的檔案";
     return;
   }
 
-  // 如果檔案格式正確，將檔案附加到 FormData
   formData.append("file", file);
 
-  // 發送 AJAX 請求
   fetch("/user/upload", {
     method: "POST",
     body: formData,
@@ -236,17 +237,16 @@ uploadForm.addEventListener("submit", async (e) => {
     .then((response) => response.json())
     .then((data) => {
       if (!data.success) {
-        // 如果後端返回錯誤訊息，顯示錯誤訊息
         const errors = data.errors || [];
         errorMessage.innerHTML = errors.map(error => `<p>${error}</p>`).join('');
       } else {
-        // 成功後重新加載頁面
+        alert("資料上傳成功！");
         location.reload();
       }
     })
     .catch((error) => {
       console.error("Error uploading file:", error);
-      errorMessage.textContent = "上傳過程發生錯誤，請稍後再試"; // 上傳錯誤提示
+      errorMessage.textContent = "上傳過程發生錯誤，請稍後再試";
     });
 });
 
@@ -292,6 +292,54 @@ document.querySelectorAll('th[data-sort]').forEach(th => {
     }
   }
 });
+
+
+// 勾選全選功能
+function toggleSelectAll(selectAllCheckbox) {
+  const checkboxes = document.querySelectorAll('.select-item');
+  checkboxes.forEach(checkbox => {
+    checkbox.checked = selectAllCheckbox.checked;
+  });
+}
+
+// 批量刪除
+async function deleteSelectedUsers() {
+  const selectedCheckboxes = document.querySelectorAll('.select-item:checked');
+  const userIds = Array.from(selectedCheckboxes)
+    .map(checkbox => Number(checkbox.value)) // 將值轉為數字
+    .filter(sid => Number.isInteger(sid) && sid > 0); // 過濾非正整數
+
+  console.log('選中的 userIds:', userIds);
+
+  if (userIds.length === 0) {
+    alert('請選擇要刪除的用戶');
+    return;
+  }
+
+  if (confirm(`你確定要刪除選中的 ${userIds.length} 位用戶嗎？`)) {
+    try {
+      const response = await fetch('/user/delete-users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userIds }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        alert('用戶刪除成功');
+        window.location.reload();
+      } else {
+        alert(result.message || '刪除失敗，請重試');
+      }
+    } catch (error) {
+      console.error('批量刪除失敗:', error);
+      alert('伺服器錯誤，無法刪除用戶');
+    }
+  }
+}
 
 </script>
 

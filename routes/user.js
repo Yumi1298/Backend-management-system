@@ -359,11 +359,8 @@ router.get("/:sid", async (req, res) => {
 
 router.post("/upload", upload.single("file"), async (req, res) => {
   try {
-    // 檢查是否有檔案
     if (!req.file) {
-      return res
-        .status(400)
-        .send({ success: false, message: "No file uploaded" });
+      return res.status(400).json({ success: false, errors: ["未上傳檔案"] });
     }
 
     const filePath = req.file.path;
@@ -373,15 +370,20 @@ router.post("/upload", upload.single("file"), async (req, res) => {
     const workbook = xlsx.readFile(filePath);
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
     const data = xlsx.utils.sheet_to_json(sheet);
-
     console.log("Parsed data:", data);
 
-    // 資料驗證
+    // 儲存錯誤 & 有效資料
     const errors = [];
     const validData = [];
+    const fileMobiles = new Set(); // 記錄 Excel 內 `mobile`
 
+    // 查詢資料庫內已有的 `mobile`
+    const [existingResults] = await db.query("SELECT mobile FROM clients");
+    const existingMobiles = new Set(existingResults.map((row) => row.mobile));
+
+    // Excel 日期轉換函數
     const excelDateToJSDate = (serial) => {
-      const excelEpoch = new Date(1899, 11, 30); // Excel 日期起始點（1900-01-01 的前一天）
+      const excelEpoch = new Date(1899, 11, 30);
       return new Date(excelEpoch.getTime() + serial * 86400000)
         .toISOString()
         .split("T")[0];
@@ -396,30 +398,33 @@ router.post("/upload", upload.single("file"), async (req, res) => {
         purchase_date,
         purchase_source,
       } = row;
-
       let formattedBirthday = birthday;
       let formattedPurchaseDate = purchase_date;
 
-      // 將數值日期轉換為標準格式
-      if (typeof birthday === "number") {
+      // 轉換 Excel 數值日期格式
+      if (typeof birthday === "number")
         formattedBirthday = excelDateToJSDate(birthday);
-      }
-
-      if (typeof purchase_date === "number") {
+      if (typeof purchase_date === "number")
         formattedPurchaseDate = excelDateToJSDate(purchase_date);
-      }
 
-      // 資料驗證規則
+      // 資料驗證
       if (!name || name.length < 2) {
-        errors.push(`Row ${index + 2}: Name格式不正確`);
+        errors.push(`第 ${index + 2} 列: 姓名格式不正確`);
       } else if (
         !formattedBirthday ||
         !/^\d{4}-\d{2}-\d{2}$/.test(formattedBirthday)
       ) {
-        errors.push(`Row ${index + 2}: Birthday格式不正確`);
+        errors.push(`第 ${index + 2} 列: 生日格式不正確`);
       } else if (!mobile || !/^09\d{8}$/.test(mobile)) {
-        errors.push(`Row ${index + 2}: Mobile格式不正確`);
+        errors.push(`第 ${index + 2} 列: 手機格式不正確`);
+      } else if (existingMobiles.has(mobile)) {
+        errors.push(`第 ${index + 2} 列: 手機號碼 ${mobile} 已存在於資料庫`);
+      } else if (fileMobiles.has(mobile)) {
+        errors.push(
+          `第 ${index + 2} 列: 手機號碼 ${mobile} 在 Excel 檔案內重複`
+        );
       } else {
+        fileMobiles.add(mobile);
         validData.push([
           name,
           formattedBirthday,
@@ -432,25 +437,71 @@ router.post("/upload", upload.single("file"), async (req, res) => {
     });
 
     if (errors.length) {
-      console.log("Validation errors:", errors);
-      return res.status(400).send({ success: false, errors });
+      console.log("驗證錯誤:", errors);
+      return res.status(400).json({ success: false, errors });
     }
 
-    console.log("Valid data:", validData);
+    if (validData.length === 0) {
+      return res.status(400).json({
+        success: false,
+        errors: ["所有資料皆有錯誤，請修正後重新上傳"],
+      });
+    }
 
-    // 插入資料到資料庫
-    const query = `
+    // SQL 插入語法，若 `mobile` 重複則更新
+    const insertQuery = `
       INSERT INTO clients (name, birthday, mobile, product_id, purchase_date, purchase_source)
       VALUES ?`;
-    await db.query(query, [validData]); // 使用回調式查詢
 
-    // 成功回應
-    return res.send({ success: true, message: "Data uploaded successfully!" });
+    await db.query(insertQuery, [validData]);
+
+    console.log("資料上傳成功");
+    return res.json({ success: true, message: "資料上傳成功！" });
   } catch (err) {
-    console.error("Error processing request:", err);
-    return res
-      .status(500)
-      .send({ success: false, message: "Server error", error: err.message });
+    console.error("伺服器錯誤:", err);
+    return res.status(500).json({
+      success: false,
+      message: "伺服器錯誤，請稍後再試",
+      error: err.message,
+    });
+  }
+});
+
+router.post("/delete-users", async (req, res) => {
+  const { userIds } = req.body;
+
+  // Debug: 確認收到的 userIds
+  console.log("收到的 userIds:", userIds);
+  console.log("類型:", typeof userIds, "第一個元素類型:", typeof userIds?.[0]);
+
+  if (
+    !Array.isArray(userIds) ||
+    userIds.length === 0 ||
+    userIds.some((sid) => !Number.isInteger(sid) || sid <= 0)
+  ) {
+    return res.status(400).json({
+      success: false,
+      message: "請提供有效的用戶 ID 列表（正整數）",
+      receivedData: userIds, // 顯示錯誤的資料
+    });
+  }
+
+  try {
+    const query = `DELETE FROM clients WHERE sid IN (?)`;
+    const [result] = await db.query(query, [userIds]);
+
+    return res.json({
+      success: true,
+      message: `成功刪除 ${result.affectedRows} 位用戶`,
+      totalDeleted: result.affectedRows,
+    });
+  } catch (error) {
+    console.error("刪除用戶時發生錯誤:", error);
+    return res.status(500).json({
+      success: false,
+      message: "伺服器錯誤，無法刪除用戶",
+      error: error.message,
+    });
   }
 });
 
